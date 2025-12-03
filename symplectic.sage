@@ -64,3 +64,10 @@ print("Hamilton solver X for i_X omega = d(x1^2):")
 print(X_ham.display())
 print("Check i_X omega (should be d(x1^2) = 2*x1*dx1):")
 print(cartan_interior(omega, X_ham).display())
+
+# is_poisson helper: check existence of both solutions
+ok, Y_iso, X_iso = is_poisson(omega, f_scalar, frame=e)
+print("is_poisson for f = x1^2:", ok)
+if ok:
+    print("Y (i_Y omega = f):", Y_iso.display())
+    print("X (i_X omega = df):", X_iso.display())

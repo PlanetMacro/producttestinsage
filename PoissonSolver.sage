@@ -53,7 +53,14 @@ def solve_poisson(omega, f, frame=None):
     chart = M.default_chart()
 
     k = omega.degree()
-    l = f.degree()
+    try:
+        l = f.degree()
+    except Exception:
+        try:
+            f = omega.domain().scalar_field(f)
+            l = 0
+        except Exception as exc:
+            raise TypeError("f must be a differential form or scalar field") from exc
     if l > k:
         raise ValueError("Need l <= k to solve i_Y omega = f")
     r = k - l
@@ -168,3 +175,19 @@ def solve_hamilton(omega, f, frame=None):
         except Exception as exc:
             raise TypeError("f must be a differential form or scalar field with exterior_derivative") from exc
     return solve_poisson(omega, df, frame=frame)
+
+
+def is_poisson(omega, f, frame=None):
+    """
+    Attempt to solve i_Y omega = f and i_X omega = d f.
+    Returns (True, Y, X) if both exist, else (False, None, None).
+    """
+    try:
+        Y = solve_poisson(omega, f, frame=frame)
+    except Exception:
+        return False, None, None
+    try:
+        X = solve_hamilton(omega, f, frame=frame)
+    except Exception:
+        return False, None, None
+    return True, Y, X
