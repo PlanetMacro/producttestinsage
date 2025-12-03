@@ -56,3 +56,11 @@ print(Y_poisson.display())
 check_poisson = cartan_interior(omega, Y_poisson)
 print("Check i_Y omega with solver:")
 print(check_poisson.display())
+
+# Hamilton solver example: f = x1^2, solve i_X omega = d f
+f_scalar = x1**2
+X_ham = solve_hamilton(omega, f_scalar, frame=e)
+print("Hamilton solver X for i_X omega = d(x1^2):")
+print(X_ham.display())
+print("Check i_X omega (should be d(x1^2) = 2*x1*dx1):")
+print(cartan_interior(omega, X_ham).display())

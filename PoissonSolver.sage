@@ -67,7 +67,10 @@ def solve_poisson(omega, f, frame=None):
             pass
         raise RuntimeError("No scalar solution: omega and f differ")
 
-    n = M.dimension()
+    try:
+        n = len(frame)
+    except Exception:
+        n = M.dimension()
     if r > n:
         raise RuntimeError("Degree mismatch: cannot build an r-vector with r > dimension")
 
@@ -134,13 +137,7 @@ def solve_poisson(omega, f, frame=None):
 
     # Residual check (raise if clearly inconsistent)
     residual = A * sol - b
-    simplified = []
-    for r in residual:
-        try:
-            simplified.append(r.simplify_full())
-        except Exception:
-            simplified.append(r)
-    if not all(r == 0 for r in simplified):
+    if not all(r == 0 for r in residual):
         raise RuntimeError("System inconsistent; residual not zero")
 
     # Assemble multivector Y
@@ -153,3 +150,21 @@ def solve_poisson(omega, f, frame=None):
         if not zero_coeff:
             Y += coeff * mv
     return Y
+
+
+def solve_hamilton(omega, f, frame=None):
+    """
+    Solve i_Y omega = d f for a multivector Y by wrapping solve_poisson.
+
+    f can be a scalar field (0-form) or a general differential form.
+    """
+    if hasattr(f, "exterior_derivative"):
+        df = f.exterior_derivative()
+    else:
+        try:
+            M = omega.domain()
+            sf = M.scalar_field(f)
+            df = sf.exterior_derivative()
+        except Exception as exc:
+            raise TypeError("f must be a differential form or scalar field with exterior_derivative") from exc
+    return solve_poisson(omega, df, frame=frame)

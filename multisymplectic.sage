@@ -27,11 +27,22 @@ omega = simplify_form_full(omega)
 disp = str(omega.display())
 print(disp)
 
+# Restrict to a smaller frame relevant for the test (q, p4, x1, x2, x3)
+frame_sub = (e[0], e[4], e[6], e[7], e[8])
+
 # Poisson solver example: solve i_Y omega = q dx1∧dx2∧dx3
 target = q * dx1.wedge(dx2).wedge(dx3)
-Y_poisson = solve_poisson(omega, target, frame=e)
+Y_poisson = solve_poisson(omega, target, frame=frame_sub)
 print("Poisson solver Y for i_Y omega = q dx1^dx2^dx3:")
 print(Y_poisson.display())
 check = cartan_interior(omega, Y_poisson)
 print("Check i_Y omega (should match target):")
 print(check.display())
+
+# Hamilton solver example: f = q dx1∧dx2∧dx3, solve i_X omega = d f
+f_form = q * dx1.wedge(dx2).wedge(dx3)
+X_ham = solve_hamilton(omega, f_form, frame=frame_sub)
+print("Hamilton solver X for i_X omega = d(q dx1^dx2^dx3):")
+print(X_ham.display())
+print("Check i_X omega (should be d f):")
+print(cartan_interior(omega, X_ham).display())
