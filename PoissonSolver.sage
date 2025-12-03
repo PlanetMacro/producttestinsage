@@ -65,7 +65,36 @@ def solve_poisson(omega, f, frame=None):
         raise ValueError("Need l <= k to solve i_Y omega = f")
     r = k - l
     if r == 0:
-        # Trivial case: need omega == f
+        # Scalar case: seek s such that s * omega = f
+        try:
+            if f.is_zero():
+                return M.scalar_field(0)
+        except Exception:
+            pass
+        try:
+            n = len(frame)
+        except Exception:
+            n = M.dimension()
+        k_combos = list(combinations(range(n), k))
+        for kc in k_combos:
+            mv = frame[kc[0]]
+            for idx in kc[1:]:
+                mv = mv.wedge(frame[idx])
+            denom = cartan_interior(omega, mv)
+            try:
+                denom_zero = denom.is_zero()
+            except Exception:
+                denom_zero = False
+            if denom_zero:
+                continue
+            num = cartan_interior(f, mv)
+            scalar_sol = num / denom
+            diff = f - scalar_sol * omega
+            try:
+                if diff.is_zero():
+                    return scalar_sol
+            except Exception:
+                pass
         diff = omega - f
         try:
             if diff.is_zero():
